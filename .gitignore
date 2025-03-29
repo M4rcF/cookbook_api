@@ -1,0 +1,6 @@
+instance/
+ambvir/
+__pycache__/
+models/__pycache__/
+controllers/__pycache__/
+app/__pycache__/
