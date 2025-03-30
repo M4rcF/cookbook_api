@@ -1,0 +1,374 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Cookbook API",
+    "description": "API documentation for the Cookbook project.",
+    "version": "1.0.0"
+  },
+  "host": "localhost:5000",
+  "basePath": "/api",
+  "schemes": [
+    "http"
+  ],
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Enter your token with the 'Bearer ' prefix, e.g., 'Bearer abcdef12345'."
+    }
+  },
+  "paths": {
+    "/auth/sign_up": {
+      "post": {
+        "summary": "Sign up new user",
+        "description": "Registers a new user.",
+        "parameters": [
+          {
+            "name": "user_data",
+            "in": "body",
+            "description": "User object with signup data",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/UserInput" }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User created successfully"
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "User login",
+        "description": "Authenticates a user and returns a token.",
+        "parameters": [
+          {
+            "name": "login_data",
+            "in": "body",
+            "description": "Login credentials",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "format": "email",
+                  "description": "User email"
+                },
+                "password": {
+                  "type": "string",
+                  "description": "User password"
+                }
+              },
+              "required": ["email", "password"]
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Login successful",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "token": {
+                  "type": "string",
+                  "description": "JWT token"
+                },
+                "user": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid email or password"
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "User logout",
+        "description": "Logs out the current user by invalidating the token.",
+        "responses": {
+          "201": {
+            "description": "Logout successful"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          { "Bearer": [] }
+        ]
+      }
+    },
+    "/users/{user_id}": {
+      "put": {
+        "summary": "Update user",
+        "description": "Updates a user profile. If the current user updates their profile, they are logged out.",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "description": "ID of the user to update",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "user_data",
+            "in": "body",
+            "description": "User object with updated data",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/UserInput" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User updated successfully"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        },
+        "security": [
+          { "Bearer": [] }
+        ]
+      }
+    },
+    "/recipes": {
+      "get": {
+        "summary": "Get all public recipes",
+        "description": "Returns a list of all public recipes.",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/components/schemas/Recipe" }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          { "Bearer": [] }
+        ]
+      },
+      "post": {
+        "summary": "Create a new recipe",
+        "description": "Creates a new recipe. Authentication required.",
+        "parameters": [
+          {
+            "name": "recipe_data",
+            "in": "body",
+            "description": "Recipe object that needs to be added",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/RecipeInput" }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Recipe created successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          { "Bearer": [] }
+        ]
+      }
+    },
+    "/recipes/{recipe_id}": {
+      "get": {
+        "summary": "Get a recipe by ID",
+        "description": "Returns a recipe if it is public.",
+        "parameters": [
+          {
+            "name": "recipe_id",
+            "in": "path",
+            "description": "ID of the recipe",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recipe retrieved successfully",
+            "schema": { "$ref": "#/components/schemas/Recipe" }
+          },
+          "400": {
+            "description": "Recipe not found or not public"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          { "Bearer": [] }
+        ]
+      },
+      "put": {
+        "summary": "Update a recipe",
+        "description": "Updates a recipe if the user is the owner.",
+        "parameters": [
+          {
+            "name": "recipe_id",
+            "in": "path",
+            "description": "ID of the recipe to update",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "recipe_data",
+            "in": "body",
+            "description": "Updated recipe object",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/RecipeInput" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recipe updated successfully"
+          },
+          "400": {
+            "description": "Recipe not found"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Access denied"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          { "Bearer": [] }
+        ]
+      },
+      "delete": {
+        "summary": "Delete a recipe",
+        "description": "Deletes a recipe if the user is the owner.",
+        "parameters": [
+          {
+            "name": "recipe_id",
+            "in": "path",
+            "description": "ID of the recipe to delete",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recipe deleted successfully"
+          },
+          "400": {
+            "description": "Recipe not found"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Access denied"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          { "Bearer": [] }
+        ]
+      }
+    },
+    "/recipes/user": {
+      "get": {
+        "summary": "Get recipes created by the authenticated user",
+        "description": "Returns a list of recipes created by the current user.",
+        "responses": {
+          "200": {
+            "description": "List of recipes returned",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/components/schemas/Recipe" }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          { "Bearer": [] }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "email": { "type": "string", "format": "email" },
+          "name": { "type": "string" },
+          "password": { "type": "string" }
+        }
+      },
+      "UserInput": {
+        "type": "object",
+        "properties": {
+          "email": { "type": "string", "format": "email", "description": "User email" },
+          "password": { "type": "string", "description": "User password" },
+          "name": { "type": "string", "description": "User name" }
+        },
+        "required": ["email", "name", "password", "password"]
+      },
+      "Recipe": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string", "description": "Recipe name" },
+          "origin": { "type": "string", "description": "Recipe origin" },
+          "category": { "type": "string", "description": "Recipe category" },
+          "image_url": { "type": "string", "description": "Recipe image URL" },
+          "instructions": { "type": "string", "description": "Preparation instructions" },
+          "ingredients": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "List of ingredients"
+          },
+          "public": { "type": "boolean", "description": "Whether the recipe is public" },
+          "user_id": { "type": "integer", "description": "ID of the user who created the recipe" }
+        }
+      },
+      "RecipeInput": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "description": "Recipe name" },
+          "origin": { "type": "string", "description": "Recipe origin" },
+          "category": { "type": "string", "description": "Recipe category" },
+          "image_url": { "type": "string", "description": "Recipe image URL" },
+          "instructions": { "type": "string", "description": "Preparation instructions" },
+          "ingredients": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "List of ingredients"
+          },
+          "public": { "type": "boolean", "description": "Whether the recipe is public" }
+        },
+        "required": ["name", "instructions", "ingredients"]
+      }
+    }
+  }
+}
