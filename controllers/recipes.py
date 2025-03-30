@@ -2,7 +2,7 @@ import json
 from flask_restful import Resource, reqparse
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
-from models.recipe import Recipe   # Presumindo que o model Recipe esteja definido em models/recipe.py
+from models.recipe import Recipe
 from models.user import User
 
 def get_current_user():
@@ -20,7 +20,7 @@ def recipes_permitted_params():
   recipes_args.add_argument('category', type=str, required=False, help="The field 'category' is optional")
   recipes_args.add_argument('image_url', type=str, required=False, help="The field 'image_url' is optional")
   recipes_args.add_argument('instructions', type=str, required=True, help="The field 'instructions' cannot be blank")
-  recipes_args.add_argument('ingredients', type=dict, action="append", required=True, help="The field 'ingredients' cannot be blank")
+  recipes_args.add_argument('ingredients', type=str, action="append", required=True, help="The field 'ingredients' cannot be blank")
   recipes_args.add_argument('public', type=bool, required=False, default=True, help="The field 'public' is optional")
   return recipes_args.parse_args()
 
@@ -33,37 +33,27 @@ class RecipesController(Resource):
   @jwt_required()
   def get(self, recipe_id=None):
     current_user = get_current_user()
-    if recipe_id is None and current_user:
-      recipes = Recipe.get_all_public()
 
+    if not current_user:
+      return {"message": "Unauthorized"}, 401
+
+    if recipe_id is None:
+      recipes = Recipe.get_all_public()
       return { 'recipes': [recipe.to_json() for recipe in recipes] }, 200
     
     recipe = Recipe.find_by_id(recipe_id)
-    if recipe and recipe.public and current_user:
+    if recipe and recipe.public:
       return recipe.to_json(), 200
-    
+  
     return { 'message': 'Recipe not found' }, 400
 
   @jwt_required()
   def post(self):
-    """
-    Cadastrar uma nova receita.
-    
-    Exemplo de JSON enviado:
-    {
-      "name": "Bolo de Cenoura",
-      "origin": "Brasil",
-      "category": "Doce",
-      "image_url": "https://receitatodahora.com.br/wp-content/uploads/2017/05/bolo-de-cenoura-perfeito.jpg",
-      "instructions": "Misture os ingredientes e asse por 40 minutos...",
-      "ingredients": [
-        { "text": "cenouras", "measure": "3" },
-        { "text": "xícaras de farinha", "measure": "2" }
-      ]
-    }
-    """
     current_user = get_current_user()
     data = recipes_permitted_params()
+
+    if not current_user:
+      return {"message": "Unauthorized"}, 401
 
     try:
       ingredients_json = json.dumps(data['ingredients'])
@@ -78,35 +68,37 @@ class RecipesController(Resource):
         user_id=current_user.id
       )
       recipe.save()
+
+      return { 'message': 'Recipe created' }, 201
     except Exception as e:
       return { 'message': f'An error occurred trying to create recipe: {str(e)}' }, 500
-    
-    return recipe.to_json(), 201
 
   @jwt_required()
   def put(self, recipe_id):
     current_user = get_current_user()
     data = recipes_permitted_params()
 
+    if not current_user:
+      return {"message": "Unauthorized"}, 401
+
     try:
       recipe = Recipe.find_by_id(recipe_id)
       if not recipe:
         return { 'message': 'Recipe not found' }, 400
 
-      if current_user and recipe.user_id == current_user.id:
-        # Atualiza os dados da receita
+      if recipe.user_id == current_user.id:
         recipe.name = data['name']
         recipe.origin = data.get('origin')
         recipe.category = data.get('category')
         recipe.image_url = data.get('image_url')
         recipe.instructions = data['instructions']
-        # Atualiza os ingredientes convertendo para JSON
         recipe.ingredients = json.dumps(data['ingredients'])
+        recipe.public = data['public']
         recipe.save()
+
         return { "message": "Recipe updated" }, 200
-
-      return { 'message': 'Access denied' }, 403
-
+      
+      return {"message": "Access denied."}, 403
     except Exception as e:
       return { 'message': f'An error occurred trying to update recipe: {str(e)}' }, 500
 
@@ -114,12 +106,32 @@ class RecipesController(Resource):
   def delete(self, recipe_id):
     current_user = get_current_user()
 
+    if not current_user:
+      return {"message": "Unauthorized"}, 401
+
     try:
       recipe = Recipe.find_by_id(recipe_id)
-      if recipe and recipe.user_id == current_user.id:
+      if not recipe:
+        return { 'message': 'Recipe not found' }, 400
+
+      if recipe.user_id == current_user.id:
         recipe.delete()
         return { 'message': 'Recipe deleted' }, 200
-      
-      return { 'message': 'Recipe not found or access denied' }, 400
+
+      return {"message": "Access denied."}, 403
     except Exception as e:
       return { 'message': f'An error occurred trying to delete recipe: {str(e)}' }, 500
+
+
+class UserRecipesController(Resource):
+  @jwt_required()
+  def get(self):
+    current_user = get_current_user()
+    if not current_user:
+      return {"message": "Unauthorized"}, 401
+    
+    recipes = Recipe.get_all_by_user(current_user.id)
+    if recipes:
+      return { 'recipes': [recipe.to_json() for recipe in recipes] }, 200
+  
+    return { 'message': 'Recipes not found' }, 400

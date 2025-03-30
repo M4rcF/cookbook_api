@@ -7,6 +7,7 @@ from models.user import User
 def signup_permitted_params():
   signup_args = reqparse.RequestParser()
   signup_args.add_argument('email', type=str, required=True, help="The field 'email' not can be blank")
+  signup_args.add_argument('name', type=str, required=True, help="The field 'name' not can be blank")
   signup_args.add_argument('password', type=str, required=True, help="The field 'password' not can be blank")
   
   return signup_args.parse_args()
@@ -22,7 +23,7 @@ class SignUpController(Resource):
   def post(self):
     data = signup_permitted_params()
 
-    user = User(data['email'], data['password'])
+    user = User(data['name'], data['email'], data['password'])
     user.save()
 
     return { 'message': 'User created' }, 201
@@ -34,7 +35,7 @@ class LoginController(Resource):
 
     if user and hmac.compare_digest(user.password, data['password']):
       token = create_access_token(identity=user.email)
-      return { 'token': token }, 201
+      return { 'token': token, 'user': user.to_json() }, 201
     
     return { 'message': 'email or password incorrect' }, 401
   

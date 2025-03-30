@@ -12,7 +12,6 @@ class Recipe(database.Model):
   instructions = database.Column(database.Text, nullable=True)       # Modo de preparo
   ingredients = database.Column(database.Text, nullable=True)        # Armazenamos JSON com a lista de ingredientes
   public = database.Column(database.Boolean, default=False)
-
   user_id = database.Column(database.Integer, database.ForeignKey('users.id'))
 
   def __init__(self, name, origin, category, image_url, instructions, ingredients, public, user_id):
@@ -59,8 +58,8 @@ class Recipe(database.Model):
     return None
   
   @classmethod
-  def get_all(cls):
-    return cls.query.all()
+  def get_all_by_user(cls, user_id):
+    return cls.query.filter_by(user_id=user_id).all()
   
   @classmethod
   def get_all_public(cls):

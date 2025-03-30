@@ -4,21 +4,26 @@ class User(database.Model):
   __tablename__ = 'users'
 
   id = database.Column(database.Integer, primary_key=True)
+  name = database.Column(database.String(50), unique=True, nullable=False)
   email = database.Column(database.String(20), unique=True, nullable=False)
   password = database.Column(database.String(10), nullable=False)
 
-  def __init__(self, email, password):
+  def __init__(self, name, email, password):
+    self.name = name
     self.email = email
     self.password = password
   
   def to_json(self):
     return {
       'id': self.id,
+      'name': self.name,
       'email': self.email
     }
   
-  def update(self, email, is_admin, name, cpf, cellphone):
+  def update(self, name, email, password):
+    self.name = name
     self.email = email
+    self.password = password
 
     database.session.add(self)
     database.session.commit()
@@ -33,9 +38,7 @@ class User(database.Model):
 
   @classmethod
   def find_by_email(cls, user_email):
-    print('teste1', user_email)
     user = cls.query.filter_by(email = user_email).first()
-    print('teste2', user)
     if user:
       return user
     
