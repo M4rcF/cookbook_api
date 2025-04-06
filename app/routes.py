@@ -2,6 +2,7 @@ from flask_restful import Api
 from controllers.recipes import RecipesController, UserRecipesController
 from controllers.users import UsersController
 from controllers.authentication import SignUpController, LoginController, LogoutController
+from controllers.reviews import ReviewController
 
 def register_routes(app):
     api = Api(app)
@@ -12,3 +13,4 @@ def register_routes(app):
     api.add_resource(UsersController, '/api/users', '/api/users/<int:user_id>')
     api.add_resource(RecipesController, '/api/recipes', '/api/recipes/<int:recipe_id>')
     api.add_resource(UserRecipesController, '/api/recipes/user')
+    api.add_resource(ReviewController, '/api/reviews', '/api/reviews/<int:review_id>')

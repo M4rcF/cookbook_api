@@ -8,6 +8,8 @@ class User(database.Model):
   email = database.Column(database.String(20), unique=True, nullable=False)
   password = database.Column(database.String(10), nullable=False)
 
+  reviews = database.relationship('Review', backref='reviews_user')
+
   def __init__(self, name, email, password):
     self.name = name
     self.email = email

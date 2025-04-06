@@ -23,6 +23,7 @@ Swagger(app, config=swagger_config, template_file="swagger_template.json")
 
 with app.app_context():
   from models.user import User
+  from models.review import Review
   database.create_all()
 
 CORS(app)

@@ -14,6 +14,8 @@ class Recipe(database.Model):
   public = database.Column(database.Boolean, default=False)
   user_id = database.Column(database.Integer, database.ForeignKey('users.id'))
 
+  reviews = database.relationship('Review', backref='reviews_recipe')
+
   def __init__(self, name, origin, category, image_url, instructions, ingredients, public, user_id):
     self.name = name
     self.origin = origin
