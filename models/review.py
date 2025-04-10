@@ -1,4 +1,4 @@
-from sql_alchemy import database  # Presume que você configurou seu SQLAlchemy
+from sql_alchemy import database
 from datetime import datetime
 
 class Review(database.Model):
@@ -12,7 +12,6 @@ class Review(database.Model):
   created_at = database.Column(database.DateTime, default=datetime.utcnow, nullable=False)
   updated_at = database.Column(database.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
-  # Definindo backref "reviews" para Recipe e "user_reviews" para User
   recipe = database.relationship('Recipe', backref='recipe_reviews')
   user = database.relationship('User', backref='user_reviews')
 

@@ -42,7 +42,7 @@ class RecipesController(Resource):
       return { 'recipes': [recipe.to_json() for recipe in recipes] }, 200
     
     recipe = Recipe.find_by_id(recipe_id)
-    if recipe and recipe.public:
+    if recipe and (recipe.public or recipe.user_id == current_user.id):
       return recipe.to_json(), 200
   
     return { 'message': 'Recipe not found' }, 400

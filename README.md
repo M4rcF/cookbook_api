@@ -42,6 +42,61 @@ Antes de iniciar, certifique-se de ter instalado:
 - [Redis](https://redis.io/download) – Importante: instale e inicie o Redis para que o sistema se conecte.
 - (Opcional) [Docker](https://www.docker.com/) e [Docker Compose](https://docs.docker.com/compose/)
 
+### 1.1. (Notas) Como Parar o Redis Localmente
+
+Para evitar conflitos de porta (6379) ao rodar o projeto via Docker, é necessário
+garantir que o Redis instalado localmente não esteja em execução. Siga as instruções
+correspondentes ao seu sistema operacional:
+
+---------------------------------------------------
+Para Linux (Debian/Ubuntu):
+
+1. Verifique se o Redis está em execução:
+```bash
+sudo systemctl status redis-server
+ou
+sudo service redis-server status
+```
+
+2. Para parar o serviço do Redis, execute:
+```bash
+sudo systemctl stop redis-server
+ou
+sudo service redis-server stop
+```
+
+3. (Opcional) Confirme que o Redis foi parado:
+```bash
+redis-cli ping
+```
+
+- Se o Redis estiver parado, esse comando não retornará "PONG" (ou retornará um erro).
+
+---------------------------------------------------
+Para Windows:
+
+Se você instalou o Redis para Windows e ele está rodando como um serviço:
+
+1. Abra o "Gerenciador de Serviços":
+
+- Pressione Win + R, digite "services.msc" e pressione Enter.
+- Ou procure por "Services" no Menu Iniciar.
+
+2. Na lista de serviços, localize o serviço do Redis (geralmente chamado "Redis" ou "redis-server").
+
+3. Clique com o botão direito no serviço e escolha "Parar" ("Stop").
+
+4. (Alternativamente) Para parar o serviço via Prompt de Comando:
+
+- Abra o Prompt de Comando como Administrador.
+- Execute o comando:
+    net stop Redis
+  (Caso o nome do serviço seja diferente, utilize o nome correto do serviço).
+
+---------------------------------------------------
+Estas instruções garantem que a porta 6379 esteja livre para que o Docker possa 
+inicializar o container do Redis sem conflitos.
+
 ---
 
 ### 2. Configuração para Desenvolvimento Local
@@ -59,6 +114,11 @@ cd cookbook_api
 ```bash
 python3 -m venv env
 source env/bin/activate
+```
+
+Para sair do ambiente virtual
+```bash
+deactivate
 ```
 
 - No Windows:
@@ -115,8 +175,11 @@ CMD ["flask", "run", "--host=0.0.0.0"]
 
 Crie (ou verifique) o arquivo docker-compose.yml com o conteúdo abaixo:
 ```yaml
-version: "3.8"
 services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
   app:
     build: .
     ports:
@@ -124,22 +187,17 @@ services:
     environment:
       - FLASK_APP=run.py
       - FLASK_ENV=development
-      - REDIS_HOST=redis
+      - REDIS_HOST=redis 
       - REDIS_PORT=6379
     depends_on:
       - redis
-
-  redis:
-    image: redis:latest
-    ports:
-      - "6379:6379"
 ```
 
 #### c) Construir e Iniciar os Containers
 
 No terminal, execute:
 ```bash
-docker-compose up --build
+sudo docker-compose up --build
 ```
 
 Após a construção, a aplicação ficará disponível em: http://localhost:5000

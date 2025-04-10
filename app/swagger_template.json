@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "title": "Cookbook API",
-    "description": "API documentation for the Cookbook project.",
+    "description": "API para gerenciamento de receitas, usuários e reviews da Cookbook API.",
     "version": "1.0.0"
   },
   "host": "localhost:5000",
@@ -15,39 +15,41 @@
       "type": "apiKey",
       "name": "Authorization",
       "in": "header",
-      "description": "Enter your token with the 'Bearer ' prefix, e.g., 'Bearer abcdef12345'."
+      "description": "Entre com o token JWT. Exemplo: 'Bearer abcdef12345...'"
     }
   },
   "paths": {
     "/auth/sign_up": {
       "post": {
-        "summary": "Sign up new user",
-        "description": "Registers a new user.",
+        "summary": "Cadastrar usuário",
+        "description": "Cria um novo usuário no sistema.",
         "parameters": [
           {
             "name": "user_data",
             "in": "body",
-            "description": "User object with signup data",
+            "description": "Dados do usuário para cadastro",
             "required": true,
-            "schema": { "$ref": "#/components/schemas/UserInput" }
+            "schema": {
+              "$ref": "#/definitions/UserInput"
+            }
           }
         ],
         "responses": {
           "201": {
-            "description": "User created successfully"
+            "description": "Usuário criado com sucesso"
           }
         }
       }
     },
     "/auth/login": {
       "post": {
-        "summary": "User login",
-        "description": "Authenticates a user and returns a token.",
+        "summary": "Login de usuário",
+        "description": "Autentica o usuário e retorna um token JWT juntamente com os dados do usuário.",
         "parameters": [
           {
             "name": "login_data",
             "in": "body",
-            "description": "Login credentials",
+            "description": "Credenciais de login",
             "required": true,
             "schema": {
               "type": "object",
@@ -55,49 +57,52 @@
                 "email": {
                   "type": "string",
                   "format": "email",
-                  "description": "User email"
+                  "description": "Email do usuário"
                 },
                 "password": {
                   "type": "string",
-                  "description": "User password"
+                  "description": "Senha do usuário"
                 }
               },
-              "required": ["email", "password"]
+              "required": [
+                "email",
+                "password"
+              ]
             }
           }
         ],
         "responses": {
           "201": {
-            "description": "Login successful",
+            "description": "Login realizado com sucesso",
             "schema": {
               "type": "object",
               "properties": {
                 "token": {
                   "type": "string",
-                  "description": "JWT token"
+                  "description": "Token JWT"
                 },
                 "user": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/definitions/User"
                 }
               }
             }
           },
           "401": {
-            "description": "Invalid email or password"
+            "description": "Email ou senha incorretos"
           }
         }
       }
     },
     "/auth/logout": {
       "post": {
-        "summary": "User logout",
-        "description": "Logs out the current user by invalidating the token.",
+        "summary": "Logout de usuário",
+        "description": "Encerra a sessão atual invalidando o token JWT.",
         "responses": {
           "201": {
-            "description": "Logout successful"
+            "description": "Logout realizado com sucesso"
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Usuário não autenticado"
           }
         },
         "security": [
@@ -107,33 +112,35 @@
     },
     "/users/{user_id}": {
       "put": {
-        "summary": "Update user",
-        "description": "Updates a user profile. If the current user updates their profile, they are logged out.",
+        "summary": "Atualizar usuário",
+        "description": "Atualiza os dados de um usuário. Se o usuário atualizar seu próprio perfil, ele será deslogado.",
         "parameters": [
           {
             "name": "user_id",
             "in": "path",
-            "description": "ID of the user to update",
+            "description": "ID do usuário a ser atualizado",
             "required": true,
             "type": "integer"
           },
           {
             "name": "user_data",
             "in": "body",
-            "description": "User object with updated data",
+            "description": "Dados atualizados do usuário",
             "required": true,
-            "schema": { "$ref": "#/components/schemas/UserInput" }
+            "schema": {
+              "$ref": "#/definitions/UserInput"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "User updated successfully"
+            "description": "Usuário atualizado com sucesso"
           },
           "404": {
-            "description": "User not found"
+            "description": "Usuário não encontrado"
           },
           "403": {
-            "description": "Access denied"
+            "description": "Acesso negado"
           }
         },
         "security": [
@@ -143,18 +150,18 @@
     },
     "/recipes": {
       "get": {
-        "summary": "Get all public recipes",
-        "description": "Returns a list of all public recipes.",
+        "summary": "Listar receitas públicas",
+        "description": "Retorna uma lista de todas as receitas marcadas como públicas.",
         "responses": {
           "200": {
-            "description": "Successful operation",
+            "description": "Lista de receitas retornada com sucesso",
             "schema": {
               "type": "array",
-              "items": { "$ref": "#/components/schemas/Recipe" }
+              "items": { "$ref": "#/definitions/Recipe" }
             }
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Usuário não autenticado"
           }
         },
         "security": [
@@ -162,26 +169,28 @@
         ]
       },
       "post": {
-        "summary": "Create a new recipe",
-        "description": "Creates a new recipe. Authentication required.",
+        "summary": "Criar receita",
+        "description": "Cria uma nova receita. Requer autenticação.",
         "parameters": [
           {
             "name": "recipe_data",
             "in": "body",
-            "description": "Recipe object that needs to be added",
+            "description": "Dados da receita a ser criada",
             "required": true,
-            "schema": { "$ref": "#/components/schemas/RecipeInput" }
+            "schema": {
+              "$ref": "#/definitions/RecipeInput"
+            }
           }
         ],
         "responses": {
           "201": {
-            "description": "Recipe created successfully"
+            "description": "Receita criada com sucesso"
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Usuário não autenticado"
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Erro interno"
           }
         },
         "security": [
@@ -191,27 +200,27 @@
     },
     "/recipes/{recipe_id}": {
       "get": {
-        "summary": "Get a recipe by ID",
-        "description": "Returns a recipe if it is public.",
+        "summary": "Buscar receita por ID",
+        "description": "Retorna os dados de uma receita (se estiver pública).",
         "parameters": [
           {
             "name": "recipe_id",
             "in": "path",
-            "description": "ID of the recipe",
+            "description": "ID da receita",
             "required": true,
             "type": "integer"
           }
         ],
         "responses": {
           "200": {
-            "description": "Recipe retrieved successfully",
-            "schema": { "$ref": "#/components/schemas/Recipe" }
+            "description": "Receita retornada com sucesso",
+            "schema": { "$ref": "#/definitions/Recipe" }
           },
           "400": {
-            "description": "Recipe not found or not public"
+            "description": "Receita não encontrada ou não pública"
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Usuário não autenticado"
           }
         },
         "security": [
@@ -219,39 +228,41 @@
         ]
       },
       "put": {
-        "summary": "Update a recipe",
-        "description": "Updates a recipe if the user is the owner.",
+        "summary": "Atualizar receita",
+        "description": "Atualiza os dados da receita se o usuário for o proprietário.",
         "parameters": [
           {
             "name": "recipe_id",
             "in": "path",
-            "description": "ID of the recipe to update",
+            "description": "ID da receita a ser atualizada",
             "required": true,
             "type": "integer"
           },
           {
             "name": "recipe_data",
             "in": "body",
-            "description": "Updated recipe object",
+            "description": "Dados atualizados da receita",
             "required": true,
-            "schema": { "$ref": "#/components/schemas/RecipeInput" }
+            "schema": {
+              "$ref": "#/definitions/RecipeInput"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Recipe updated successfully"
+            "description": "Receita atualizada com sucesso"
           },
           "400": {
-            "description": "Recipe not found"
+            "description": "Receita não encontrada"
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Usuário não autenticado"
           },
           "403": {
-            "description": "Access denied"
+            "description": "Acesso negado"
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Erro interno"
           }
         },
         "security": [
@@ -259,32 +270,32 @@
         ]
       },
       "delete": {
-        "summary": "Delete a recipe",
-        "description": "Deletes a recipe if the user is the owner.",
+        "summary": "Deletar receita",
+        "description": "Remove a receita se o usuário for o proprietário.",
         "parameters": [
           {
             "name": "recipe_id",
             "in": "path",
-            "description": "ID of the recipe to delete",
+            "description": "ID da receita a ser deletada",
             "required": true,
             "type": "integer"
           }
         ],
         "responses": {
           "200": {
-            "description": "Recipe deleted successfully"
+            "description": "Receita deletada com sucesso"
           },
           "400": {
-            "description": "Recipe not found"
+            "description": "Receita não encontrada"
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Usuário não autenticado"
           },
           "403": {
-            "description": "Access denied"
+            "description": "Acesso negado"
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Erro interno"
           }
         },
         "security": [
@@ -294,18 +305,142 @@
     },
     "/recipes/user": {
       "get": {
-        "summary": "Get recipes created by the authenticated user",
-        "description": "Returns a list of recipes created by the current user.",
+        "summary": "Listar receitas do usuário autenticado",
+        "description": "Retorna uma lista das receitas criadas pelo usuário logado.",
         "responses": {
           "200": {
-            "description": "List of recipes returned",
+            "description": "Receitas retornadas com sucesso",
             "schema": {
               "type": "array",
-              "items": { "$ref": "#/components/schemas/Recipe" }
+              "items": { "$ref": "#/definitions/Recipe" }
             }
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Usuário não autenticado"
+          }
+        },
+        "security": [
+          { "Bearer": [] }
+        ]
+      }
+    },
+    "/reviews": {
+      "get": {
+        "summary": "Listar reviews",
+        "description": "Retorna todas as reviews ou filtra por 'recipe_id' via query string.",
+        "parameters": [
+          {
+            "name": "recipe_id",
+            "in": "query",
+            "description": "ID da receita para filtrar as reviews",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de reviews retornada com sucesso",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Review" }
+            }
+          },
+          "401": {
+            "description": "Usuário não autenticado"
+          }
+        },
+        "security": [
+          { "Bearer": [] }
+        ]
+      },
+      "post": {
+        "summary": "Criar review",
+        "description": "Cria uma nova review para uma receita.",
+        "parameters": [
+          {
+            "name": "review_data",
+            "in": "body",
+            "description": "Dados da review a ser criada",
+            "required": true,
+            "schema": { "$ref": "#/definitions/ReviewInput" }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Review criada com sucesso",
+            "schema": { "$ref": "#/definitions/Review" }
+          },
+          "401": {
+            "description": "Usuário não autenticado"
+          }
+        },
+        "security": [
+          { "Bearer": [] }
+        ]
+      }
+    },
+    "/reviews/{review_id}": {
+      "put": {
+        "summary": "Atualizar review",
+        "description": "Atualiza uma review existente; somente o dono ou um admin podem atualizar.",
+        "parameters": [
+          {
+            "name": "review_id",
+            "in": "path",
+            "description": "ID da review a ser atualizada",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "review_data",
+            "in": "body",
+            "description": "Dados atualizados da review",
+            "required": true,
+            "schema": { "$ref": "#/definitions/ReviewInput" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Review atualizada com sucesso"
+          },
+          "404": {
+            "description": "Review não encontrada"
+          },
+          "403": {
+            "description": "Acesso negado"
+          },
+          "500": {
+            "description": "Erro interno"
+          }
+        },
+        "security": [
+          { "Bearer": [] }
+        ]
+      },
+      "delete": {
+        "summary": "Deletar review",
+        "description": "Deleta uma review; somente o dono ou um admin podem deletar.",
+        "parameters": [
+          {
+            "name": "review_id",
+            "in": "path",
+            "description": "ID da review a ser deletada",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Review deletada com sucesso"
+          },
+          "404": {
+            "description": "Review não encontrada"
+          },
+          "403": {
+            "description": "Acesso negado"
+          },
+          "500": {
+            "description": "Erro interno"
           }
         },
         "security": [
@@ -314,61 +449,157 @@
       }
     }
   },
-  "components": {
-    "schemas": {
-      "User": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "integer" },
-          "email": { "type": "string", "format": "email" },
-          "name": { "type": "string" },
-          "password": { "type": "string" }
-        }
-      },
-      "UserInput": {
-        "type": "object",
-        "properties": {
-          "email": { "type": "string", "format": "email", "description": "User email" },
-          "password": { "type": "string", "description": "User password" },
-          "name": { "type": "string", "description": "User name" }
-        },
-        "required": ["email", "name", "password", "password"]
-      },
-      "Recipe": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "integer" },
-          "name": { "type": "string", "description": "Recipe name" },
-          "origin": { "type": "string", "description": "Recipe origin" },
-          "category": { "type": "string", "description": "Recipe category" },
-          "image_url": { "type": "string", "description": "Recipe image URL" },
-          "instructions": { "type": "string", "description": "Preparation instructions" },
-          "ingredients": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "List of ingredients"
-          },
-          "public": { "type": "boolean", "description": "Whether the recipe is public" },
-          "user_id": { "type": "integer", "description": "ID of the user who created the recipe" }
-        }
-      },
-      "RecipeInput": {
-        "type": "object",
-        "properties": {
-          "name": { "type": "string", "description": "Recipe name" },
-          "origin": { "type": "string", "description": "Recipe origin" },
-          "category": { "type": "string", "description": "Recipe category" },
-          "image_url": { "type": "string", "description": "Recipe image URL" },
-          "instructions": { "type": "string", "description": "Preparation instructions" },
-          "ingredients": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "List of ingredients"
-          },
-          "public": { "type": "boolean", "description": "Whether the recipe is public" }
-        },
-        "required": ["name", "instructions", "ingredients"]
+  "definitions": {
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "email": { "type": "string", "format": "email" },
+        "name": { "type": "string" }
       }
+    },
+    "UserInput": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email do usuário"
+        },
+        "password": {
+          "type": "string",
+          "description": "Senha do usuário"
+        },
+        "name": {
+          "type": "string",
+          "description": "Nome do usuário"
+        }
+      },
+      "required": ["email", "name", "password"]
+    },
+    "Recipe": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "name": {
+          "type": "string",
+          "description": "Nome da receita"
+        },
+        "origin": {
+          "type": "string",
+          "description": "Origem da receita"
+        },
+        "category": {
+          "type": "string",
+          "description": "Categoria da receita"
+        },
+        "image_url": {
+          "type": "string",
+          "description": "URL da imagem da receita"
+        },
+        "instructions": {
+          "type": "string",
+          "description": "Modo de preparo"
+        },
+        "ingredients": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Lista de ingredientes"
+        },
+        "public": {
+          "type": "boolean",
+          "description": "Define se a receita é pública"
+        },
+        "user_id": {
+          "type": "integer",
+          "description": "ID do usuário que criou a receita"
+        }
+      }
+    },
+    "RecipeInput": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Nome da receita"
+        },
+        "origin": {
+          "type": "string",
+          "description": "Origem da receita"
+        },
+        "category": {
+          "type": "string",
+          "description": "Categoria da receita"
+        },
+        "image_url": {
+          "type": "string",
+          "description": "URL da imagem da receita"
+        },
+        "instructions": {
+          "type": "string",
+          "description": "Modo de preparo"
+        },
+        "ingredients": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Lista de ingredientes"
+        },
+        "public": {
+          "type": "boolean",
+          "description": "Define se a receita é pública"
+        }
+      },
+      "required": ["name", "instructions", "ingredients"]
+    },
+    "Review": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "comment": {
+          "type": "string",
+          "description": "Comentário da review"
+        },
+        "rating": {
+          "type": "integer",
+          "description": "Nota da avaliação"
+        },
+        "recipe_id": {
+          "type": "integer",
+          "description": "ID da receita"
+        },
+        "user_id": {
+          "type": "integer",
+          "description": "ID do usuário que fez a review"
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Data de criação da review"
+        },
+        "updated_at": {
+          "type": "string",
+          "description": "Data de atualização da review"
+        }
+      }
+    },
+    "ReviewInput": {
+      "type": "object",
+      "properties": {
+        "rating": {
+          "type": "integer",
+          "description": "Nota da avaliação"
+        },
+        "comment": {
+          "type": "string",
+          "description": "Comentário da review"
+        },
+        "recipe_id": {
+          "type": "integer",
+          "description": "ID da receita"
+        }
+      },
+      "required": ["rating", "recipe_id"]
     }
   }
 }

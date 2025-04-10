@@ -1,7 +1,7 @@
 import json
 from flask_restful import Resource, reqparse
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models.review import Review  # Certifique-se de que o model Review está definido e importado corretamente
+from models.review import Review
 from models.user import User
 
 def get_current_user():
@@ -22,10 +22,6 @@ def review_permitted_params():
 class ReviewController(Resource):
   @jwt_required()
   def get(self, recipe_id=None):
-    """
-    Se review_id for fornecido, retorna a review correspondente; 
-    caso contrário, retorna todas as reviews do usuário autenticado.
-    """
     current_user = get_current_user()
     if not current_user:
       return {"message": "Unauthorized"}, 401
@@ -41,15 +37,6 @@ class ReviewController(Resource):
 
   @jwt_required()
   def post(self):
-    """
-    Cadastrar uma nova review.
-    Exemplo de JSON:
-    {
-        "rating": 5,
-        "comment": "Great recipe!",
-        "recipe_id": 1
-    }
-    """
     current_user = get_current_user()
     if not current_user:
       return {"message": "Unauthorized"}, 401
@@ -76,16 +63,6 @@ class ReviewController(Resource):
 
   @jwt_required()
   def put(self, review_id):
-    """
-    Atualiza uma review existente.
-    Exemplo de JSON:
-    {
-        "rating": 4,
-        "comment": "Updated comment",
-        "recipe_id": 1
-    }
-    Apenas o dono da review ou um admin pode atualizar.
-    """
     current_user = get_current_user()
     if not current_user:
       return {"message": "Unauthorized"}, 401
@@ -107,10 +84,6 @@ class ReviewController(Resource):
 
   @jwt_required()
   def delete(self, review_id):
-    """
-    Deleta uma review existente.
-    Apenas o dono ou um admin pode deletar.
-    """
     current_user = get_current_user()
     if not current_user:
       return {"message": "Unauthorized"}, 401

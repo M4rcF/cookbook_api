@@ -6,11 +6,11 @@ class Recipe(database.Model):
 
   id = database.Column(database.Integer, primary_key=True)
   name = database.Column(database.String(100), nullable=False)
-  origin = database.Column(database.String(100), nullable=True)      # Ex: "Brasil", "Itália"
-  category = database.Column(database.String(100), nullable=True)    # Ex: "Doce", "Salgado"
+  origin = database.Column(database.String(100), nullable=True)
+  category = database.Column(database.String(100), nullable=True)
   image_url = database.Column(database.String(255), nullable=True)
-  instructions = database.Column(database.Text, nullable=True)       # Modo de preparo
-  ingredients = database.Column(database.Text, nullable=True)        # Armazenamos JSON com a lista de ingredientes
+  instructions = database.Column(database.Text, nullable=True)
+  ingredients = database.Column(database.Text, nullable=True)
   public = database.Column(database.Boolean, default=False)
   user_id = database.Column(database.Integer, database.ForeignKey('users.id'))
 
@@ -22,7 +22,7 @@ class Recipe(database.Model):
     self.category = category
     self.image_url = image_url
     self.instructions = instructions
-    self.ingredients = ingredients  # Esperamos uma string JSON
+    self.ingredients = ingredients
     self.public = public
     self.user_id = user_id
 
